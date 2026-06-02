@@ -1,0 +1,22 @@
+.DS_Store
+*.log
+*.tmp
+*.bak
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime caches
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.cache/
+node_modules/
+
+# Local scratch output
+tmp/
+work/
+outputs/

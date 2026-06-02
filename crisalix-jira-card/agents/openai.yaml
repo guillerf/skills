@@ -1,0 +1,4 @@
+interface:
+  display_name: "Crisalix Jira Card"
+  short_description: "Create ENG, CORE, and CRI Jira tasks, bugs, and cards with remembered defaults."
+  default_prompt: "Create a Jira card in ENG, CORE, or CRI for:"
