@@ -1,44 +1,50 @@
 ---
 name: crisalix-jira-card
-description: Create Jira cards, tickets, tasks, bugs, stories, or spikes in Crisalix ENG, CORE, or CRI as Guillermo Ruiz through REST using this Mac's Keychain token.
+description: Create Jira cards, tickets, tasks, bugs, stories, or spikes in Crisalix ENG, CORE, or CRI as Guillermo Ruiz through REST, from local Codex or an OpenClaw Gateway.
 ---
 
 # Crisalix Jira Card
 
-Create requested cards through Jira Cloud REST as **Guillermo Ruiz** (`guillermo.ruiz@crisalix.com`). Never use Rovo, the Codex Jira connector, `_createjiraissue`, or Pere Calopa's credentials for this workflow. Do not create test cards unless explicitly requested. A request to create a real card authorizes that creation.
+Create requested cards through Jira Cloud REST as **Guillermo Ruiz** (`guillermo.ruiz@crisalix.com`). Never use Rovo, the Codex Jira connector, `_createjiraissue`, or Pere Calopa's credentials. Do not create test cards unless explicitly requested. A request to create a card authorizes that creation.
 
-This reproduces OpenClaw's `crisalix-jira-card/SKILL.md` and `references/board-defaults.md` from `crisalito@macbook-air-de-crisalito`, adapted to this Mac. The server's protected `JIRA` secret is **not** copied or used locally.
+Use the same creation rules and board defaults in both environments. Credentials belong to each deployment and are never included in this skill or transferred between computers.
 
-Read [references/board-defaults.md](references/board-defaults.md) for exact project/type/field IDs, ADF examples, routing options and transitions. Prefer these defaults over metadata discovery unless creation fails, the project/type is outside ENG/CORE/CRI, or unusual fields are requested.
+## Choose the transport
 
-## Local authentication and transport
+Select by the **current agent runtime**, not OS, hostname, or the mere presence of an environment variable: an OpenClaw server can also run macOS.
 
-Use the included `scripts/jira` executable, resolving it against this skill directory. On this installation:
+| Runtime | Authentication and execution | Reference |
+| --- | --- | --- |
+| Local Codex on macOS | This computer's API token in Keychain; included `scripts/jira` client | [references/local-auth.md](references/local-auth.md) |
+| OpenClaw with its protected Gateway exec/egress capability | Deployment's protected `JIRA` Basic credential; Gateway-hosted REST requests | [references/openclaw-auth.md](references/openclaw-auth.md) |
 
-```sh
-/Users/guille/.agents/skills/crisalix-jira-card/scripts/jira check
-```
+Read only the authentication reference for the active runtime, plus [references/board-defaults.md](references/board-defaults.md) for project/type/field IDs, ADF examples, routing options and transitions. Resolve supporting paths relative to this skill's loaded directory; do not assume a particular user's home or checkout path.
 
-- Endpoint: `https://api.atlassian.com/ex/jira/82b5fe1b-d904-46bb-a485-32f01e7ea2d7/rest/api/3`.
-- Basic Auth is built internally from the fixed email and raw API token retrieved from macOS Keychain. Never supply a token or Basic credential in shell arguments, environment variables, files, chat, or logs. Never run a command to print/export the Keychain secret.
-- Keychain service: `com.crisalix.codex.jira.82b5fe1b-d904-46bb-a485-32f01e7ea2d7`; account: `guillermo.ruiz@crisalix.com`; synchronization disabled. The compiled client is cached in `~/Library/Caches/crisalix-jira-card/jira` and contains no secret.
-- If missing/expired/rejected, ask the user to create a separate token for this Mac and launch `scripts/jira setup`. It presents a native secure field outside chat, verifies `/myself`, and only then stores the token. For this endpoint use a scoped Jira token with classic scopes `read:jira-user`, `read:jira-work`, `write:jira-work`. See [references/local-auth.md](references/local-auth.md).
-- `check`, `create`, and `transition` verify `/myself`. Every write requires active Guillermo Ruiz, the expected email, and a nonempty accountId. Never bypass a failed check or fall back to a connector/server token. Allow the user to handle any macOS Keychain access prompt.
+If the runtime or secure transport is unavailable or ambiguous, stop before writing and report what is missing. Do not fall back between credentials or connectors. In particular, a local Codex session with SSH access to OpenClaw still uses its local token; SSH availability does not select the Gateway transport.
 
-## Workflow
+## Shared identity and API contract
 
-1. Identify ENG, CORE, or CRI; ask only if the target is ambiguous or essential context is missing.
+- Base URL: `https://api.atlassian.com/ex/jira/82b5fe1b-d904-46bb-a485-32f01e7ea2d7/rest/api/3`.
+- Use Basic Auth through the chosen secure transport. Never print, log, decode for inspection, export, or pass a credential in command arguments. Local tokens are raw API tokens; OpenClaw's `JIRA` is already Base64 encoded. Do not confuse the two formats.
+- Before **each Jira write**, call GET `/myself` through that transport. Require `active: true`, display name `Guillermo Ruiz`, email `guillermo.ruiz@crisalix.com`, and a nonempty `accountId`. Stop on a mismatch or missing identity evidence.
+- Set `fields.reporter.accountId` to that verified accountId. Jira assigns creator; never set `fields.creator`.
+- After creation, fetch `summary,status,creator,reporter`. Both creator and reporter must have Guillermo's verified accountId and display name. A mismatch stops further writes.
+- The local client enforces these checks automatically. In OpenClaw, perform the same checks with Gateway-hosted requests as described in its reference.
+
+## Shared creation workflow
+
+1. Identify ENG, CORE, or CRI; ask only if the target is ambiguous or essential context is missing. Prefer remembered defaults over metadata discovery unless creation fails, the project/type is outside these boards, or unusual fields are requested.
 2. Default to Task; use Bug for clearly broken behavior and Bug staging only when explicitly indicated. Preserve requested Story/Spike/Epic types.
-3. Build a REST v3 `{ "fields": { ... } }` JSON file in the task's `work/` directory. Include project, issuetype, summary, and an ADF description with context, goal, and acceptance criteria. For bugs include actual/expected behavior, scope/environment and reproduction steps; do not invent missing facts.
-4. Include `customfield_10275` (Why) as ADF for Tasks. Omit Why for CRI Bug; the create screen rejects it. Set optional product/area/components only when strongly implied.
-5. Run `scripts/jira create /absolute/path/to/work/payload.json`. The client checks `/myself`, sets reporter to that verified accountId, performs POST `/issue`, prints the created key immediately, and fetches summary, status, **creator and reporter**. Both people must have Guillermo's verified accountId and display name. Creator is assigned by Jira; never set it in the payload.
-6. If a requested state differs, run `scripts/jira transition KEY 'To Do'` or `scripts/jira transition KEY Backlog`. It checks identity and both people before writing and verifies them and the requested status afterward. Transition IDs are 11 and 111. Do not choose a new state without user intent.
-7. Return issue key/link, title, final status, creator and reporter. Never claim either identity or final status is verified if read-back failed.
+3. Build a REST v3 `{ "fields": { ... } }` JSON payload in the current task's scratch/work directory. Include project, issuetype, summary, and an ADF description with context, goal, and acceptance criteria. For bugs include actual/expected behavior, scope/environment and reproduction steps; do not invent missing facts. Honor explicitly requested placeholder content.
+4. Include `customfield_10275` (Why) as ADF for Tasks. Omit Why for CRI Bug; its create screen rejects it. Set optional product/area/components only when strongly implied.
+5. Verify identity, set reporter, and POST `/issue` through the selected transport. Preserve the returned key immediately, then GET `/issue/{key}?fields=summary,status,creator,reporter` and verify both people.
+6. If a requested state differs, verify identity again and check creator/reporter before POST `/issue/{key}/transitions`. Transition IDs: `11` for To Do and `111` for Backlog. Fetch the issue afterward and verify both people and the requested final status. Do not choose a new state without user intent.
+7. Return issue key/link, title, final status, creator and reporter. Never claim identity or final status is verified if read-back failed.
 
 ## Failures and recovery
 
-- For a definitive Jira field-validation error, use `scripts/jira get '/issue/createmeta/PROJECT/issuetypes/TYPE_ID'` for the requested project/type only; correct the payload, update the reference after confirmation, and retry once. Stop if the same validation error recurs.
-- After a timeout, transport failure, 5xx, or success without a key, creation may already have happened. Do not repeat POST `/issue` automatically; reconcile through read-only queries first. `scripts/jira get '/search/jql?jql=URL_ENCODED_JQL&fields=summary,creator,reporter,status'` can locate candidates. Ask if the outcome remains uncertain.
-- If a created key was printed but verification failed, preserve and report that key. Use `scripts/jira read KEY` to retry read-back. Do not create a duplicate, delete the issue, silently change reporter, or transition while identity verification is unresolved.
-- Authentication or creator/reporter mismatch: stop further writes and report the failure. Never switch to Pere/Rovo or import OpenClaw's secret.
-- `scripts/jira self-test` runs offline mocked checks only: no network, Keychain access, or test card.
+- For a definitive Jira field-validation error, GET `/issue/createmeta/PROJECT/issuetypes/TYPE_ID` for the requested project/type only. Correct the payload, update the board reference after confirming the field shape, recheck identity, and retry once. Stop if the same validation error recurs.
+- After a timeout, transport failure, 5xx, or success without a key, creation may already have happened. Do not repeat POST `/issue` automatically; reconcile through read-only queries first. GET `/search/jql?jql=URL_ENCODED_JQL&fields=summary,creator,reporter,status` can locate candidates. Ask if the outcome remains uncertain.
+- If a created key is known but verification failed, preserve and report it, then retry only read-back. Do not create a duplicate, delete the issue, silently change reporter, or transition while verification is unresolved.
+- Authentication or creator/reporter mismatch: stop further writes and report the failure. Never switch to Pere/Rovo, another computer's token, or a different transport to bypass it.
+- Validate local client behavior with `scripts/jira self-test`: offline mocked checks only, no network, Keychain access, or test card.

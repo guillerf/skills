@@ -1,4 +1,4 @@
 interface:
   display_name: "Crisalix Jira Card"
-  short_description: "Create ENG, CORE, and CRI cards as Guillermo via REST and local Keychain."
+  short_description: "Create Crisalix cards via local Keychain or OpenClaw Gateway."
   default_prompt: "Create a Jira card in ENG, CORE, or CRI for:"
