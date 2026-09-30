@@ -1,0 +1,13 @@
+#!/bin/zsh
+set -eu
+script_dir=${0:A:h}
+cache_dir="$HOME/Library/Caches/crisalix-jira-card"
+binary="$cache_dir/jira"
+mkdir -p "$cache_dir"
+chmod 700 "$cache_dir"
+if [[ ! -x "$binary" || "$script_dir/jira.swift" -nt "$binary" ]]; then
+    /usr/bin/swiftc "$script_dir/jira.swift" -o "$binary.new"
+    /usr/bin/codesign --force --sign - "$binary.new" 2>/dev/null
+    mv "$binary.new" "$binary"
+fi
+exec "$binary" "$@"
