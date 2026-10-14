@@ -12,6 +12,8 @@ Keep only authored custom skills here. Installed third-party skills, lock files,
 
 - `crisalix-jira-card`: Create Jira cards in Crisalix ENG, CORE, or CRI boards with remembered defaults.
 
+- `estetix-3d-simulator`: Work in Estetix staging instances and create Face, Breast, or Body reconstructions with photo and measurement defaults.
+
 ## Install Locally
 
 Use symlinks from `/Users/guille/.agents/skills` to this repository so edits are versioned here and available to the agent immediately.
