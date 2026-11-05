@@ -1,4 +1,4 @@
 interface:
   display_name: "Crisalix Jira Card"
-  short_description: "Create ENG, CORE, and CRI Jira tasks, bugs, and cards with remembered defaults."
+  short_description: "Create Crisalix cards via local Keychain or OpenClaw Gateway."
   default_prompt: "Create a Jira card in ENG, CORE, or CRI for:"

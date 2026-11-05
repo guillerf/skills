@@ -11,7 +11,7 @@ Use this reference for fast Jira card creation in the common Crisalix boards.
 
 | Key | Project name | Project ID | Board URL |
 | --- | --- | --- | --- |
-| `ENG` | `3ngine 3D` | `10190` | `https://crisalix.atlassian.net/jira/software/c/projects/ENG/boards/88` |
+| `ENG` | `3ngine 3D` | `10190` | `https://crisalix.atlassian.net/jira/software/c/projects/ENG/boards/96` |
 | `CORE` | `CORE (engine + DL)` | `10181` | `https://crisalix.atlassian.net/jira/software/c/projects/CORE/boards/88` |
 | `CRI` | `Crisalix` | `10179` | `https://crisalix.atlassian.net/jira/software/c/projects/CRI/boards/85` |
 
@@ -46,7 +46,7 @@ For `CRI` `Bug` creation (`Bug`, issue type ID `10004`), the create screen requi
 - `issuetype`
 - `project`
 
-Always still provide a useful Markdown `description`. Do not send `customfield_10275` (`Why`) for `CRI` `Bug` creation; Jira rejects it because it is not on that create screen.
+Always still provide a useful ADF `description`. Do not send `customfield_10275` (`Why`) for `CRI` `Bug` creation; Jira rejects it because it is not on that create screen.
 
 `customfield_10275` must be sent as Atlassian Document Format:
 
@@ -130,9 +130,9 @@ Common option IDs:
 - `SSO`: `10383`
 - `Public API`: `10404`
 
-For CORE cards, `Core web-service (Core/DL)` may be appropriate when the request is about core engine or DL work. Do not set product if unsure.
+For CORE cards, Core web-service (Core/DL) may be appropriate when the request is about core engine or DL work. Do not set product if unsure.
 
-For CRI iPad app or patient-profile issues, use `DoctorApp` when the flow is the clinician app/patient profile. Use `PatientApp` only when the user clearly means the patient-facing app.
+For CRI iPad app or patient-profile issues, use DoctorApp when the flow is the clinician app/patient profile. Use PatientApp only when the user clearly means the patient-facing app.
 
 ### Components
 
@@ -140,22 +140,34 @@ Field: `components`
 
 Useful CRI component IDs for bug routing:
 
-- `DoctorApp (outside viewer)`: `10423`
-- `DoctorApp (viewer)`: `10419`
-- `PatientApp`: `10424`
+- DoctorApp (outside viewer): `10423`
+- DoctorApp (viewer): `10419`
+- PatientApp: `10424`
 
 Set components only when the request clearly identifies the product area.
 
-## Task Create Payload Pattern
+## Task REST Payload Pattern
+
+Send this `fields` object to `POST /issue`:
 
 ```json
 {
-  "cloudId": "82b5fe1b-d904-46bb-a485-32f01e7ea2d7",
-  "projectKey": "CORE",
-  "issueTypeName": "Task",
-  "summary": "Short task title",
-  "description": "Markdown description with context, goal, and acceptance criteria.",
-  "additional_fields": {
+  "fields": {
+    "project": { "key": "CORE" },
+    "issuetype": { "id": "10002" },
+    "summary": "Short task title",
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "Context, goal, and acceptance criteria." }
+          ]
+        }
+      ]
+    },
     "customfield_10275": {
       "type": "doc",
       "version": 1,
@@ -163,10 +175,7 @@ Set components only when the request clearly identifies the product area.
         {
           "type": "paragraph",
           "content": [
-            {
-              "type": "text",
-              "text": "Short impact statement."
-            }
+            { "type": "text", "text": "Short impact statement." }
           ]
         }
       ]
@@ -175,32 +184,41 @@ Set components only when the request clearly identifies the product area.
 }
 ```
 
-Add product/product-area fields inside `additional_fields` only when useful and obvious.
+Add product, product-area, or component fields inside `fields` only when useful and obvious.
 
-## CRI Bug Create Payload Pattern
+## CRI Bug REST Payload Pattern
+
+Send this `fields` object to `POST /issue`:
 
 ```json
 {
-  "cloudId": "82b5fe1b-d904-46bb-a485-32f01e7ea2d7",
-  "projectKey": "CRI",
-  "issueTypeName": "Bug",
-  "summary": "Short bug title",
-  "description": "Markdown description with context, actual behavior, expected behavior, scope, and steps to reproduce.",
-  "additional_fields": {
+  "fields": {
+    "project": { "key": "CRI" },
+    "issuetype": { "id": "10004" },
+    "summary": "Short bug title",
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Context, actual behavior, expected behavior, scope, and steps to reproduce."
+            }
+          ]
+        }
+      ]
+    },
     "components": [
-      {
-        "id": "10423"
-      }
+      { "id": "10423" }
     ],
     "customfield_10192": [
-      {
-        "id": "10279"
-      }
+      { "id": "10279" }
     ],
     "customfield_10557": [
-      {
-        "id": "10642"
-      }
+      { "id": "10642" }
     ]
   }
 }
