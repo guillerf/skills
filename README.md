@@ -14,6 +14,8 @@ Keep only authored custom skills here. Installed third-party skills, lock files,
 
 - `estetix-3d-simulator`: Work in Estetix staging instances and create Face, Breast, or Body reconstructions with photo and measurement defaults.
 
+- `crisalix-buildkite-image`: Launch the core standalone or core_engine image build in Buildkite with the `bk` CLI, with branch, tag and message defaults from the core_engine checkout.
+
 ## Install Locally
 
 Use symlinks from `/Users/guille/.agents/skills` to this repository so edits are versioned here and available to the agent immediately.
