@@ -1,0 +1,4 @@
+interface:
+  display_name: "Crisalix Buildkite Image"
+  short_description: "Launch the core standalone or core_engine image build in Buildkite."
+  default_prompt: "Launch the core standalone image build in Buildkite for the current core_engine branch"
