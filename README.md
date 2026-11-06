@@ -3,7 +3,7 @@
 This repository is the source of truth for personal skills installed into:
 
 ```text
-/Users/guille/.agents/skills
+~/.agents/skills
 ```
 
 Keep only authored custom skills here. Installed third-party skills, lock files, caches, and local agent state should stay outside this repository.
@@ -16,16 +16,24 @@ Keep only authored custom skills here. Installed third-party skills, lock files,
 
 - `crisalix-buildkite-image`: Launch the core standalone or core_engine image build in Buildkite with the `bk` CLI, with branch, tag and message defaults from the core_engine checkout.
 
+- `github-identity`: Perform authenticated GitHub work and pushes only as `guillerf`, verifying API identity, Git transport, and authorship of new resources.
+
+## Global GitHub Identity Rule
+
+`AGENTS.md` contains the GitHub identity requirement for all repositories. Install it as `~/.codex/AGENTS.md`, together with the `github-identity` skill, so the requirement is loaded even before skill selection. It requires `guillerf` and stops GitHub writes and pushes when that identity cannot be verified.
+
 ## Install Locally
 
-Use symlinks from `/Users/guille/.agents/skills` to this repository so edits are versioned here and available to the agent immediately.
+Use symlinks from `~/.agents/skills` to this repository so edits are versioned here and available to the agent. Adjust the checkout path if it is not `~/development/skills`.
 
 ```bash
-mkdir -p /Users/guille/.agents/skills
-ln -s /Users/guille/development/skills/crisalix-jira-card /Users/guille/.agents/skills/crisalix-jira-card
+mkdir -p "$HOME/.agents/skills" "$HOME/.codex"
+ln -s "$HOME/development/skills/crisalix-jira-card" "$HOME/.agents/skills/crisalix-jira-card"
+ln -s "$HOME/development/skills/github-identity" "$HOME/.agents/skills/github-identity"
+ln -s "$HOME/development/skills/AGENTS.md" "$HOME/.codex/AGENTS.md"
 ```
 
-If the skill already exists as a real directory, move or back it up before creating the symlink.
+If a destination already exists, inspect and preserve it before installing. Merge the GitHub section into an existing global `AGENTS.md` rather than replacing unrelated instructions. Start a new Codex session to load new global instructions; this setup does not automatically update other computers.
 
 ## Update Workflow
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Identity"
+  short_description: "Operate on GitHub only as verified guillerf"
+  default_prompt: "Use $github-identity to perform the requested GitHub work as guillerf."
